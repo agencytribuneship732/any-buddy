@@ -1,5 +1,7 @@
 # claude-code-any-buddy
 
+Only tested this on Linux will probably need updates for windows and mac as the binaries are in different locations. I'm open to PRs
+
 Pick any Claude Code companion pet you want.
 
 ```bash
