@@ -2,7 +2,7 @@
 Pick any Claude Code companion pet you want.
 
 ```bash
-npx any-buddy
+npx any-buddy@latest
 ```
 
 That's it. Follow the prompts to choose your species, rarity, eyes, hat, and name.
