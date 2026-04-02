@@ -52,8 +52,18 @@ if (!userId || !wantSpecies || !wantRarity || !wantEye || !wantHat) {
 }
 
 const requireShiny = wantShiny === 'true';
-const requirePeak: StatName | null = wantPeak && wantPeak !== 'any' ? (wantPeak as StatName) : null;
-const requireDump: StatName | null = wantDump && wantDump !== 'any' ? (wantDump as StatName) : null;
+
+function validateStatName(value: string | undefined, label: string): StatName | null {
+  if (!value || value === 'any') return null;
+  if (!(STAT_NAMES as readonly string[]).includes(value)) {
+    console.error(`Invalid ${label} stat: "${value}". Valid: ${STAT_NAMES.join(', ')}`);
+    process.exit(1);
+  }
+  return value as StatName;
+}
+
+const requirePeak = validateStatName(wantPeak, 'peak');
+const requireDump = validateStatName(wantDump, 'dump');
 const needStats = !!(requirePeak || requireDump);
 
 const start = Date.now();

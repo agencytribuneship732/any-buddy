@@ -45,25 +45,26 @@ function parseArgs(argv: string[]): { command: string | undefined; flags: CliFla
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === '--species' || arg === '-s') {
+    const next = i + 1 < args.length ? args[i + 1] : undefined;
+    if ((arg === '--species' || arg === '-s') && next !== undefined) {
       flags.species = args[++i];
-    } else if (arg === '--rarity' || arg === '-r') {
+    } else if ((arg === '--rarity' || arg === '-r') && next !== undefined) {
       flags.rarity = args[++i];
-    } else if (arg === '--eye' || arg === '-e') {
+    } else if ((arg === '--eye' || arg === '-e') && next !== undefined) {
       flags.eye = args[++i];
-    } else if (arg === '--hat' || arg === '-t') {
+    } else if ((arg === '--hat' || arg === '-t') && next !== undefined) {
       flags.hat = args[++i];
-    } else if (arg === '--name' || arg === '-n') {
+    } else if ((arg === '--name' || arg === '-n') && next !== undefined) {
       flags.name = args[++i];
-    } else if (arg === '--personality' || arg === '-p') {
+    } else if ((arg === '--personality' || arg === '-p') && next !== undefined) {
       flags.personality = args[++i];
-    } else if (arg === '--preset') {
+    } else if (arg === '--preset' && next !== undefined) {
       flags.preset = args[++i];
     } else if (arg === '--shiny') {
       flags.shiny = true;
-    } else if (arg === '--peak') {
+    } else if (arg === '--peak' && next !== undefined) {
       flags.peak = args[++i];
-    } else if (arg === '--dump') {
+    } else if (arg === '--dump' && next !== undefined) {
       flags.dump = args[++i];
     } else if (arg === '--silent') {
       flags.silent = true;

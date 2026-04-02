@@ -35,7 +35,7 @@ export function getClaudeSettings(): ClaudeSettings {
 export function saveClaudeSettings(settings: ClaudeSettings): void {
   const dir = join(homedir(), '.claude');
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2) + '\n');
+  writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2) + '\n', { mode: 0o600 });
 }
 
 function findHookEntry(matchers: MatcherEntry[] | undefined): MatcherEntry | null {

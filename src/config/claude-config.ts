@@ -43,7 +43,13 @@ export function renameCompanion(newName: string): void {
   if (!existsSync(configPath)) {
     throw new Error(`Claude config not found at ${configPath}`);
   }
-  const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let config: Record<string, any>;
+  try {
+    config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  } catch {
+    throw new Error(`Failed to parse Claude config at ${configPath}`);
+  }
   if (!config.companion) {
     throw new Error('No companion found in config. Run /buddy in Claude Code first to hatch one.');
   }
@@ -67,7 +73,13 @@ export function setCompanionPersonality(personality: string): void {
   if (!existsSync(configPath)) {
     throw new Error(`Claude config not found at ${configPath}`);
   }
-  const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let config: Record<string, any>;
+  try {
+    config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  } catch {
+    throw new Error(`Failed to parse Claude config at ${configPath}`);
+  }
   if (!config.companion) {
     throw new Error('No companion found in config. Run /buddy in Claude Code first to hatch one.');
   }
@@ -78,7 +90,13 @@ export function setCompanionPersonality(personality: string): void {
 export function deleteCompanion(): boolean {
   const configPath = getClaudeConfigPath();
   if (!existsSync(configPath)) return false;
-  const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let config: Record<string, any>;
+  try {
+    config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  } catch {
+    return false;
+  }
   if (!config.companion) return false;
   delete config.companion;
   writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', { mode: 0o600 });
