@@ -37,11 +37,27 @@ export async function runGalleryTUI(
       const animator = createAnimator(500);
       let unsubAnimation: (() => void) | null = null;
 
+      const handleCtrlC = (key: { ctrl?: boolean; name?: string }) => {
+        if (key.ctrl && key.name === 'c') {
+          finish({ action: 'cancel' });
+        }
+      };
+
+      const handleSelectionChanged = (index: number) => {
+        selectedIndex = index;
+        preview.update(entries[index]);
+      };
+
       function finish(result: GalleryResult): void {
         if (resolved) return;
         resolved = true;
         unsubAnimation?.();
         animator.stop();
+        profileList.select?.removeListener(
+          SelectRenderableEvents.SELECTION_CHANGED,
+          handleSelectionChanged,
+        );
+        r.keyInput.removeListener('keypress', handleCtrlC);
         keyboard.destroy();
         r.destroy();
         renderer = null;
@@ -97,10 +113,7 @@ export async function runGalleryTUI(
       unsubAnimation = animator.subscribe((frame) => preview.tick(frame));
 
       // Update preview when Select selection changes
-      profileList.select?.on(SelectRenderableEvents.SELECTION_CHANGED, (index: number) => {
-        selectedIndex = index;
-        preview.update(entries[index]);
-      });
+      profileList.select?.on(SelectRenderableEvents.SELECTION_CHANGED, handleSelectionChanged);
 
       const HELP_BROWSE = '  ↑↓ navigate   Enter apply   d delete   Esc exit';
       const HELP_CONFIRM_APPLY = '  Enter/Y confirm   Esc/N go back';
@@ -156,11 +169,7 @@ export async function runGalleryTUI(
       );
 
       // Ctrl+C fallback
-      r.keyInput.on('keypress', (key) => {
-        if (key.ctrl && key.name === 'c') {
-          finish({ action: 'cancel' });
-        }
-      });
+      r.keyInput.on('keypress', handleCtrlC);
 
       r.auto();
     });

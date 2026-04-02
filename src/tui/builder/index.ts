@@ -64,11 +64,18 @@ export async function runBuilder(
       const animator = createAnimator(500);
       let unsubAnimation: (() => void) | null = null;
 
+      const handleCtrlC = (key: { ctrl?: boolean; name?: string }) => {
+        if (key.ctrl && key.name === 'c') {
+          finish(null);
+        }
+      };
+
       function finish(result: DesiredTraits | null): void {
         if (resolved) return;
         resolved = true;
         unsubAnimation?.();
         animator.stop();
+        r.keyInput.removeListener('keypress', handleCtrlC);
         keyboard.destroy();
         r.destroy();
         renderer = null;
@@ -166,11 +173,7 @@ export async function runBuilder(
       selection.focusField(startField);
 
       // Handle Ctrl+C
-      r.keyInput.on('keypress', (key) => {
-        if (key.ctrl && key.name === 'c') {
-          finish(null);
-        }
-      });
+      r.keyInput.on('keypress', handleCtrlC);
 
       // Start rendering
       r.auto();
