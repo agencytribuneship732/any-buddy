@@ -9,8 +9,10 @@ import { isNodeRuntime, verifySalt, getCurrentSalt, isClaudeRunning } from '@/pa
 import { patchBinary } from '@/patcher/patch.js';
 import { runPreflight } from '@/patcher/preflight.js';
 import {
-  savePetConfig,
   loadPetConfig,
+  loadPetConfigV2,
+  savePetConfigV2,
+  saveProfile,
   isHookInstalled,
   installHook,
   getCompanionName,
@@ -235,6 +237,31 @@ export async function runInteractive(flags: CliFlags = {}): Promise<void> {
     return;
   }
 
+  // --- Save as profile (before patch decision — the salt search is the expensive part) ---
+  const profileName = (
+    await input({
+      message: 'Save as profile? (name, or blank to skip)',
+      default: '',
+    })
+  ).trim();
+
+  if (profileName) {
+    saveProfile(profileName, {
+      salt: result.salt,
+      species: desired.species,
+      rarity: desired.rarity,
+      eye: desired.eye,
+      hat: desired.hat,
+      shiny: desired.shiny,
+      stats: foundBones.stats,
+      name: null,
+      personality: null,
+      createdAt: new Date().toISOString(),
+    });
+    console.log(chalk.green(`  Saved profile "${profileName}"`));
+  }
+
+  // --- Apply now? ---
   const running = isClaudeRunning(binaryPath);
   if (running) {
     console.log(chalk.yellow('\n  Claude Code is currently running.'));
@@ -253,15 +280,21 @@ export async function runInteractive(flags: CliFlags = {}): Promise<void> {
     }));
 
   if (!applyNow) {
-    savePetConfig({
-      salt: result.salt,
-      species: desired.species,
-      rarity: desired.rarity,
-      eye: desired.eye,
-      hat: desired.hat,
-      appliedAt: new Date().toISOString(),
-    });
-    console.log(chalk.dim('  Salt saved. Apply later with: any-buddy apply\n'));
+    // Persist salt to v2 config so `any-buddy apply` can use it later
+    const skipConfig = loadPetConfigV2() ?? {
+      version: 2 as const,
+      activeProfile: null,
+      salt: ORIGINAL_SALT,
+      profiles: {},
+    };
+    skipConfig.salt = result.salt;
+    skipConfig.appliedAt = new Date().toISOString();
+    savePetConfigV2(skipConfig);
+    if (profileName) {
+      console.log(chalk.dim('  Use any-buddy switch to activate it later.\n'));
+    } else {
+      console.log(chalk.dim('  Salt saved. Apply later with: any-buddy apply\n'));
+    }
     return;
   }
 
@@ -278,16 +311,21 @@ export async function runInteractive(flags: CliFlags = {}): Promise<void> {
   }
   console.log(chalk.dim(`  Backup: ${patchResult.backupPath}`));
 
-  savePetConfig({
-    salt: result.salt,
-    previousSalt: oldSalt,
-    species: desired.species,
-    rarity: desired.rarity,
-    eye: desired.eye,
-    hat: desired.hat,
-    appliedTo: binaryPath,
-    appliedAt: new Date().toISOString(),
-  });
+  // Persist as v2 config (preserves existing profiles)
+  const configV2 = loadPetConfigV2() ?? {
+    version: 2 as const,
+    activeProfile: null,
+    salt: ORIGINAL_SALT,
+    profiles: {},
+  };
+  configV2.salt = result.salt;
+  configV2.previousSalt = oldSalt;
+  configV2.appliedTo = binaryPath;
+  configV2.appliedAt = new Date().toISOString();
+  if (profileName) {
+    configV2.activeProfile = profileName;
+  }
+  savePetConfigV2(configV2);
 
   // Hook setup
   if (!isHookInstalled() && !flags.noHook) {
@@ -382,6 +420,17 @@ export async function runInteractive(flags: CliFlags = {}): Promise<void> {
     console.log(chalk.dim('  Then run any-buddy again to customize the name and personality.'));
     if (flags.name || flags.personality) {
       console.log(chalk.yellow('  --name and --personality are ignored until after hatching.'));
+    }
+  }
+
+  // Update profile with final companion identity (now that rename/personality are done)
+  if (profileName) {
+    const profiles = loadPetConfigV2()?.profiles ?? {};
+    const saved = profiles[profileName];
+    if (saved) {
+      saved.name = getCompanionName() ?? saved.name;
+      saved.personality = getCompanionPersonality() ?? saved.personality;
+      saveProfile(profileName, saved, { activate: true });
     }
   }
 

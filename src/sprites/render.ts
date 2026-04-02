@@ -1,9 +1,16 @@
 import type { Bones, Species } from '@/types.js';
 import { BODIES, HAT_LINES } from './data.ts';
 
-export function renderSprite(bones: Bones, frame = 0): string[] {
+/**
+ * Idle animation sequence from Claude Code.
+ * Indexes into the species frame array; -1 = sleeping (eyes replaced with "-").
+ */
+export const IDLE_SEQUENCE = [0, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 2, 0, 0, 0] as const;
+
+export function renderSprite(bones: Bones, frame = 0, sleeping = false): string[] {
   const frames = BODIES[bones.species];
-  const body = frames[frame % frames.length].map((line) => line.replaceAll('{E}', bones.eye));
+  const eye = sleeping ? '-' : bones.eye;
+  const body = frames[frame % frames.length].map((line) => line.replaceAll('{E}', eye));
   const lines = [...body];
   if (bones.hat !== 'none' && !lines[0].trim()) {
     lines[0] = HAT_LINES[bones.hat];
