@@ -1,14 +1,14 @@
 import chalk from 'chalk';
 import { select } from '@inquirer/prompts';
-import { platform } from 'os';
 import { ORIGINAL_SALT, RARITY_STARS } from '@/constants.js';
 import { roll } from '@/generation/index.js';
-import { isNodeRuntime, verifySalt, isClaudeRunning } from '@/patcher/salt-ops.js';
+import { isNodeRuntime, verifySalt, isClaudeRunning, getMinSaltCount } from '@/patcher/salt-ops.js';
 import { patchBinary } from '@/patcher/patch.js';
 import { runPreflight } from '@/patcher/preflight.js';
 import {
   loadPetConfigV2,
   savePetConfigV2,
+  switchToProfile,
   saveProfile,
   deleteProfile,
   getCompanionName,
@@ -23,8 +23,6 @@ import {
   DEFAULT_PROFILE,
   type GalleryEntry,
 } from '@/tui/gallery/state.js';
-
-const MIN_SALT_COUNT = platform() === 'win32' ? 1 : 3;
 
 async function selectBuddyFallback(entries: GalleryEntry[]): Promise<string | null> {
   const choices = entries.map((entry) => {
@@ -133,7 +131,7 @@ export async function runBuddies(): Promise<void> {
   for (const trySalt of [oldSalt, ORIGINAL_SALT]) {
     if (!trySalt) continue;
     const check = verifySalt(binaryPath, trySalt);
-    if (check.found >= MIN_SALT_COUNT) {
+    if (check.found >= getMinSaltCount(binaryPath)) {
       const patchResult = patchBinary(binaryPath, trySalt, newSalt);
       const displayName = isDefault ? 'Original' : selectedName;
       console.log(
@@ -153,13 +151,17 @@ export async function runBuddies(): Promise<void> {
   }
 
   // Update config
-  const updated = loadPetConfigV2();
-  if (updated) {
-    updated.previousSalt = updated.salt;
-    updated.activeProfile = isDefault ? null : selectedName;
-    updated.salt = newSalt;
-    updated.appliedAt = new Date().toISOString();
-    savePetConfigV2(updated);
+  if (isDefault) {
+    // Default pet has no profile entry — update config directly
+    if (config) {
+      config.previousSalt = config.salt;
+      config.activeProfile = null;
+      config.salt = newSalt;
+      config.appliedAt = new Date().toISOString();
+      savePetConfigV2(config);
+    }
+  } else {
+    switchToProfile(selectedName);
   }
 
   // Restore incoming profile's companion identity
@@ -168,15 +170,15 @@ export async function runBuddies(): Promise<void> {
     if (incoming?.name) {
       try {
         renameCompanion(incoming.name);
-      } catch {
-        /* companion may not exist yet */
+      } catch (err) {
+        console.log(chalk.dim(`  Could not restore name: ${(err as Error).message}`));
       }
     }
     if (incoming?.personality) {
       try {
         setCompanionPersonality(incoming.personality);
-      } catch {
-        /* companion may not exist yet */
+      } catch (err) {
+        console.log(chalk.dim(`  Could not restore personality: ${(err as Error).message}`));
       }
     }
   }

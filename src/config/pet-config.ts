@@ -52,7 +52,6 @@ function migrateV1(v1: PetConfig): PetConfigV2 {
     };
   }
 
-  savePetConfigV2(migrated);
   return migrated;
 }
 
@@ -61,7 +60,9 @@ export function loadPetConfigV2(): PetConfigV2 | null {
   try {
     const raw = JSON.parse(readFileSync(OUR_CONFIG, 'utf-8'));
     if (raw.version === 2) return raw as PetConfigV2;
-    return migrateV1(raw as PetConfig);
+    const migrated = migrateV1(raw as PetConfig);
+    savePetConfigV2(migrated);
+    return migrated;
   } catch {
     return null;
   }
@@ -101,11 +102,6 @@ export function getProfiles(): Record<string, ProfileData> {
   return config?.profiles ?? {};
 }
 
-export function getActiveProfile(): string | null {
-  const config = loadPetConfigV2();
-  return config?.activeProfile ?? null;
-}
-
 export function switchToProfile(name: string): PetConfigV2 {
   const config = loadPetConfigV2();
   if (!config?.profiles[name]) {
@@ -124,7 +120,7 @@ export function switchToProfile(name: string): PetConfigV2 {
 export function deleteProfile(name: string): void {
   const config = loadPetConfigV2();
   if (!config?.profiles[name]) return;
-  if (config.profiles[name].salt === config.salt) {
+  if (config.activeProfile === name) {
     throw new Error(`Cannot delete the active buddy "${name}". Switch to another first.`);
   }
   config.profiles = Object.fromEntries(
