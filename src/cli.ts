@@ -8,6 +8,7 @@ import {
   runRestore,
   runRehatch,
   runBuddies,
+  runShare,
 } from './tui/index.ts';
 import { ISSUE_URL, diagnostics } from './constants.ts';
 import type { CliFlags } from './types.ts';
@@ -104,6 +105,9 @@ try {
     case 'buddies':
       await runBuddies();
       break;
+    case 'share':
+      await runShare();
+      break;
     case 'help':
       printHelp();
       break;
@@ -138,6 +142,7 @@ Usage:
   any-buddy --preset "Arcane Dragon"  Use a curated preset build
   any-buddy preview                  Browse pets without applying
   any-buddy current                  Show your current pet
+  any-buddy share                    Print an ASCII card of your pet + copy to clipboard
   any-buddy apply [--silent]         Re-apply saved pet after update
   any-buddy restore                  Restore original pet
   any-buddy buddies                  Browse and switch between your buddies
