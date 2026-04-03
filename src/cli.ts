@@ -67,6 +67,8 @@ function parseArgs(argv: string[]): { command: string | undefined; flags: CliFla
       flags.peak = args[++i];
     } else if (arg === '--dump' && next !== undefined) {
       flags.dump = args[++i];
+    } else if (arg === '--all') {
+      flags.all = true;
     } else if (arg === '--silent') {
       flags.silent = true;
     } else if (arg === '--no-hook') {
@@ -141,6 +143,7 @@ Usage:
                                      Fully non-interactive
   any-buddy --preset "Arcane Dragon"  Use a curated preset build
   any-buddy preview                  Browse pets without applying
+  any-buddy preview --all            Show all preset builds at once
   any-buddy current                  Show your current pet
   any-buddy share                    Print an ASCII card of your pet + copy to clipboard
   any-buddy apply [--silent]         Re-apply saved pet after update
@@ -149,6 +152,7 @@ Usage:
   any-buddy rehatch                  Delete companion to re-hatch via /buddy
 
 Options:
+  --all                  (preview only) Dump all preset builds with sprites to stdout
   --preset <name>        Use a curated preset (e.g., "Arcane Dragon", "Royal Capybara")
   -s, --species <name>   Species (duck, goose, blob, cat, dragon, octopus, owl,
                          penguin, turtle, snail, ghost, axolotl, capybara,
